@@ -1,20 +1,22 @@
 #!/bin/bash
-#SBATCH -p short -N 1 -n 16 --mem 16gb --out phmmer_1job.log
-module load hmmer/3
+#SBATCH -p short -N 1 -n 16 --mem 16gb --out logs/download.log
 
-#Download the HMG box HMM that we need to search our annotated pep files for
-curl -o HMG_box.hmm http://pfam.xfam.org/family/PF00505/hmm
+#start by identifying the genes of interest and downloading them. 
 
-#Now Perform the Hmmsearch
-ln -s /bigdata/stajichlab/shared/projects/Chytrid/Chytrid_Phylogenomics/Phylogeny/pep .
-cat pep/*.fasta > allseqs.aa
-esl-sfetch --index allseqs.aa
-hmmsearch --domtbl HMG.hits.domtbl -E 1e-5 HMG_box.hmm allseqs.aa > HMG_box.hmmsearch
-grep -h -v '^#' HMG.hits.domtbl | awk '{print $1}' | sort | uniq | esl-sfetch -f allseqs.aa - > HMG.hits.aa.fa # Extraction of the hits to a file
-grep ">" HMG.hits.aa.fa | cut -d\| -f1 | sed 's/>//' | sort | uniq -c > results/HMG.hit.counts.txt
+curl -o C1_cysteine_protease.hmm http://pfam.xfam.org/family/PF00112/hmm #Insect_path
+curl -o Trypsin_protease.hmm http://pfam.xfam.org/family/PF00112/hmm #Insect_path
+curl -o HMG_Box.hmm http://pfam.xfam.org/family/PF00505/hmm #mating
+curl -o Ecdysone_receptor_zfC4.hmm http://pfam.xfam.org/family/PF00104/hmm #insect_association
+curl -o Ecdysone_receptor_hormone.hmm http://pfam.xfam.org/family/PF00105/hmm #insect_association
+curl -o Photochrome.hmm http://pfam.xfam.org/family/PF00360/hmm #Photosensing
+curl -o lycopene_cyclase.hmm http://pfam.xfam.org/family/PF05834/hmm #B-carotene synthesis
+curl -o BCMO1.hmm http://pfam.xfam.org/family/PF03055/hmm #Beta,beta-carotene 15,15'-monooxygenase F. oxy
 
-#By examining the HMG.hits.aa.fa file we can determine which proteins are HMG boxes in Coelomomyces. 
-#Because the HMG box genes in Coelomomyces begin with the identifier "HMI" this is especially easy:
-#Search for any Coelomomyces hits from the total hits file
+for file in *.hmm; do dir=$(echo $file | cut -d. -f1); mkdir -p $dir; mv $file $dir; done
 
-grep "HMI" HMG.hits.aa.fa > results/Coelomomyces_HMG.hit_Ids.txt
+#add another pep file for comparisons. We can add more too. 
+
+wget https://ftp.ncbi.nlm.nih.gov/genomes/genbank/fungi/Metarhizium_anisopliae/latest_assembly_versions/GCA_000739145.1_Metarhizium_anisopliae/GCA_000739145.1_Metarhizium_anisopliae_protein.faa.gz
+pigz GCA_000739145.1_Metarhizium_anisopliae_protein.faa.gz
+
+mv GCA_000739145.1_Metarhizium_anisopliae_protein.faa pep/Metarhizium_anisopliae_protein.fasta
