@@ -19,4 +19,6 @@ for file in *.hmm; do dir=$(echo $file | cut -d. -f1); mkdir -p $dir; mv $file $
 wget https://ftp.ncbi.nlm.nih.gov/genomes/genbank/fungi/Metarhizium_anisopliae/latest_assembly_versions/GCA_000739145.1_Metarhizium_anisopliae/GCA_000739145.1_Metarhizium_anisopliae_protein.faa.gz
 pigz GCA_000739145.1_Metarhizium_anisopliae_protein.faa.gz
 
+
+ln -s /rhome/myaco005/bigdata/chytrid/Coelomomyces/gene_counts/pep
 mv GCA_000739145.1_Metarhizium_anisopliae_protein.faa pep/Metarhizium_anisopliae_protein.fasta
